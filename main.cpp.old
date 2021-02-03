@@ -1,0 +1,31 @@
+#include <QApplication>
+#include <QListWidget>
+#include <QPushButton>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QString>
+#include "wordwidget.h"
+int main(int argc, char* argv[])
+{
+	QApplication app(argc, argv);
+	QWidget *mainwidget = new QWidget();
+	mainwidget->setGeometry(100, 100, 260, 260);
+	//mainwidget->setFixedHeight(mainwidget->sizeHint().height());
+    QScrollArea *scrollArea = new QScrollArea( mainwidget );
+    scrollArea->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+    scrollArea->setWidgetResizable( true );
+    scrollArea->setGeometry( 10, 10, 200, 200 );
+	QWidget *childWidget = new QWidget();
+	scrollArea->setWidget(childWidget);
+	QVBoxLayout *layout = new QVBoxLayout();
+    childWidget->setLayout( layout );
+	//WordWidget *word_one = new WordWidget("word 1");
+    for (int i = 0; i < 10; i++)
+    {
+		WordWidget *word = new WordWidget(QString("%1").arg(i) );
+        layout->addWidget( word );
+    }	
+	mainwidget->show();
+	return app.exec();
+}
