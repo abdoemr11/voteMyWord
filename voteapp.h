@@ -13,13 +13,17 @@ class VoteApp:public QDialog
 	Q_OBJECT
 public:
 	VoteApp(QWidget *parent=0);
+	static int member_id;
+	static bool canVote;	
 private slots:
 	void login();
 	void logout();
 	void addNewWord();
 private:
+	void initWords();
 	void initLayout();
 	void populateLayout();
+
 	QPushButton *loginButton;
 	QPushButton *logoutButton;
 	QPushButton *addNewButton;
@@ -34,6 +38,7 @@ private:
 	QFormLayout *topLogOutLayout;
 	QVBoxLayout *middleLayout;
 	QFormLayout *bottomLayout;
+	//********************************
 };
 #endif
 

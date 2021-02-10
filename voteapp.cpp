@@ -5,18 +5,36 @@
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QScrollArea>
+#include <QSqlQuery>
 #include <QDebug>
+#define NO_MEMBER 1000
 VoteApp::VoteApp(QWidget *parent)
 	:QDialog(parent)
 {
+	//member_id = NO_MEMBER;
 	initLayout();
 	populateLayout();
+	initWords();
 	connect(loginButton, SIGNAL(clicked()),
 			this, SLOT(login()));
 	connect(logoutButton, SIGNAL(clicked()),
 			this, SLOT(logout()));
 	connect(addNewButton, SIGNAL(clicked()),
 			this, SLOT(addNewWord()));
+}
+int VoteApp::member_id = NO_MEMBER ;
+bool VoteApp::canVote = false;
+void VoteApp::initWords()
+{
+	QSqlQuery query;
+	query.exec("SELECT * FROM word;");
+	while(query.next())	
+	{
+		int word_id = query.value(0).toInt();
+		QString word_text = query.value(1).toString();
+		wordWidget = new WordWidget(word_id);
+        middleLayout->addWidget( wordWidget );
+	}
 }
 void VoteApp::initLayout()
 {
@@ -57,8 +75,8 @@ void VoteApp::populateLayout()
 	// this is for debugging purposes only
     for (int i = 0; i < 20; i++)
     {
-		wordWidget = new WordWidget(QString("%1").arg(i) );
-        middleLayout->addWidget( wordWidget );
+	//	wordWidget = new WordWidget(QString("%1").arg(i) );
+     //   middleLayout->addWidget( wordWidget );
 	}
 	bottomLayout->addRow(newWordLineEdit, addNewButton);
 
@@ -66,9 +84,27 @@ void VoteApp::populateLayout()
 void VoteApp::login()
 {
 	qDebug() << "clicked login button "	;
-	loginButton->setVisible(false);
-	loginLineEdit->setVisible(false);
-	logoutButton->setVisible(true);
+	//Check if the user is in the database
+	//if yes set the current user to it
+	QSqlQuery query;
+	query.exec("SELECT member_name, member_id FROM member;");
+	QString input_member = loginLineEdit->text();
+	while(query.next())
+	{
+		QString member = query.value(0).toString();	
+		qDebug() << member;
+		if(member == input_member)
+		{
+			member_id = query.value(1).toInt();
+			qDebug() << "valid member";	
+			loginButton->setVisible(false);
+			loginLineEdit->setVisible(false);
+			logoutButton->setVisible(true);
+			canVote = true;
+			return ;
+		}
+	}
+			qDebug() <<"Not valid member" ;	
 }
 void VoteApp::logout()
 {
@@ -76,8 +112,32 @@ void VoteApp::logout()
 	loginButton->setVisible(true);
 	loginLineEdit->setVisible(true);
 	logoutButton->setVisible(false);
+	qDebug() << "member " << member_id << " is logging out";
+	member_id = NO_MEMBER;
+	canVote = false;
 }
 void VoteApp::addNewWord()
 {
-	qDebug() << "The new Word is "	<< newWordLineEdit->text() ;
+	QString newWord = newWordLineEdit->text();
+	if (!VoteApp::canVote)
+	{
+		qDebug() << "please log in first to add words";
+		return;
+	}
+	if(!newWord.isEmpty())
+	{
+		qDebug() << "The new Word is "	<< newWord ;
+		QSqlQuery query;
+		query.prepare("INSERT INTO word "
+					"(word_text) "
+					"VALUES(?) ;");
+		query.bindValue(0, newWord);
+
+		query.exec();
+		qDeleteAll(middleWidget->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly));
+		initWords();
+
+	}
+	else 
+		qDebug() << "Please enter a valid word";
 }
