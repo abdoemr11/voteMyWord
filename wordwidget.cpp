@@ -4,10 +4,11 @@
 #include <QDebug>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QMessageBox>
 #include "voteapp.h"
 #include "wordwidget.h"
-#define UPVOTED 1
-#define DOWNVOTED 0
+#define UPVOTED "UPVOTE"
+#define DOWNVOTED "DOWNVOTE"
 WordWidget::WordWidget(int id,QWidget *parent)
 	:QWidget(parent)
 {
@@ -78,7 +79,7 @@ void WordWidget::downvote()
 	getWord();
 	countLabel->setText(QString::number(voteCounter));
 }
-void WordWidget::voteWord(int vote_type)
+void WordWidget::voteWord(QString vote_type)
 {
 	
 	QSqlQuery query;
@@ -131,22 +132,42 @@ void WordWidget::showWho()
 	QSqlQuery query;	
 	query.prepare("SELECT member_name FROM member WHERE member_id IN (SELECT member_id FROM vote WHERE vote_type = ? "
 	"AND word_id = ?)");
-	query.bindValue(0, UPVOTED);
+
+    query.bindValue(0, UPVOTED);
+    //query.bindValue(0, DOWNVOTED);
 	query.bindValue(1, word_id);
-	if(!query.exec())
+    if(!query.exec())
 		qDebug()<< query.lastError().text();
-	upvoter =  "";
-	downvoter = "";
+    upvoter = "";
+    downvoter = "";
 	while(query.next())	
 	{
-		upvoter += query.value(0).toString();			
-		//if(!query.last)
-			upvoter += ",  ";
+        upvoter += query.value(0).toString();
+        //if(query.value(0) == query.last().value(0))
+            upvoter += ",  ";
 		qDebug() << query.value(0).toString();
 	//	qDebug() << "I am writing from query.next()";
 	}
-	qDebug() << "The person who upvoted" << upvoter;
-	qDebug() << "The person who downvoted is" << downvoter;
+    //get who downvoted
+    query.bindValue(0, DOWNVOTED);
+    query.bindValue(1, word_id);
+    if(!query.exec())
+        qDebug()<< query.lastError().text();
+    int i = 0;
+    while(query.next())
+    {
+        downvoter += query.value(0).toString();
+        //if(!query.last)
+        //query.seek
+            downvoter += ",  ";
+        qDebug() << query.value(0).toString();
+    //	qDebug() << "I am writing from query.next()";
+    }
+    qDebug() << "The person who upvoted" << upvoter;
+    qDebug() << "The person who downvoted is" << downvoter;
+    QString voter = "The person who upvoted " + upvoter +
+                    "\n The person who downvoted " + downvoter;
+    QMessageBox::information(this, tr("Voter information"),voter );
 }
 
 void WordWidget::getVoteCounter()

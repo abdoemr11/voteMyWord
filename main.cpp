@@ -3,16 +3,26 @@
 #include <QtSql>
 #include <QSqlQuery>
 #include <QMessageBox>
-QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+QString pack(QStringList const& list)
+{
+    return list.join(" ");
+}
 bool createConnection()
 { 
-    //db.setHostName("localhost");
-    db.setDatabaseName("test.db");
-    //db.setUserName("root");
-    //db.setPassword("123123");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+
+    db.setHostName("localhost");
+    db.setDatabaseName("test");
+    db.setUserName("root");
+    db.setPassword("123123123");
+    qDebug() << QSqlDatabase::drivers();
     if(!db.open())
     { 
-        QMessageBox::critical(0, QObject::tr("Database Error"), 
+
+        qDebug() << QSqlDatabase::drivers();
+      //  QMessageBox::critical(0, QObject::tr("Database Error"),
+          //                      pack(QSqlDatabase::drivers()));
+        QMessageBox::critical(0, QObject::tr("Database Error"),
                                 db.lastError().text());
         return false;
 

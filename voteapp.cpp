@@ -21,6 +21,7 @@ VoteApp::VoteApp(QWidget *parent)
 			this, SLOT(logout()));
 	connect(addNewButton, SIGNAL(clicked()),
 			this, SLOT(addNewWord()));
+    resize(512,512);
 }
 int VoteApp::member_id = NO_MEMBER ;
 bool VoteApp::canVote = false;

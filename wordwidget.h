@@ -13,11 +13,12 @@ public:
 private slots:
 	void upvote();
 	void downvote();
-	void showWho();
+    void showWho();
 private:
 	void getWord();
 	void getVoteCounter();
-	void voteWord(int);
+    void voteWord(QString);
+
 	QGridLayout *widgetLayout;
 	QLabel *wordLabel;
 	QLabel *countLabel;
